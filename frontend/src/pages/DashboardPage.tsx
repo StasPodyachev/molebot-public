@@ -101,7 +101,7 @@ export default function DashboardPage() {
     <div className="bg-bg text-text font-sans antialiased min-h-dvh overflow-x-hidden">
       <header className="landing-header">
         <div className="landing-header__inner">
-          <div className="landing-header__brand">
+          <div className="landing-header__brand" onClick={() => window.location.href = '/'} style={{cursor: 'pointer'}}>
             <MolebotLogo size={28} /> molebot
           </div>
           <nav className="landing-header__nav">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
               <MolebotLogo size={20} /> molebot
             </div>
             <div className="landing-footer__links">
-              <a href="https://github.com/StasPodyachev/molebot_mantle">GitHub</a>
+              <a href="https://github.com/StasPodyachev/molebot-public">GitHub</a>
               <a href="https://explorer.sepolia.mantle.xyz">Explorer</a>
               <a href="https://dorahacks.io">DoraHacks</a>
             </div>
