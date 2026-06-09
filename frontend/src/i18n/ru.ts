@@ -124,5 +124,9 @@ const ru = {
 
   // Lang
   "lang.switch": "English",
+  "nav.logout": "Выйти",
+  "wallet.notFound": "Кошелёк не найден.",
+  "wallet.switchNetwork": "Требуется переключиться на Mantle Sepolia.",
+  "wallet.checkFailed": "Не удалось проверить сеть.",
 };
 export default ru;

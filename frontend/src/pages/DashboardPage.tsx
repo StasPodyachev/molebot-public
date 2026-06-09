@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { useParams } from 'react-router-dom';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useT } from '../i18n';
 import { useMoleNFT, useMintNFT } from '@/hooks/useMoleNFT';
 import { MANTLE_CHAIN_ID } from '@/lib/mantle-chain';
 import ChatPanel from '@/components/ChatPanel';
@@ -46,6 +47,7 @@ function MolebotLogo({ size = 28 }: { size?: number }) {
  *   - Чат с кротом
  */
 export default function DashboardPage() {
+  const { t } = useT();
   const { tokenId: routeTokenId } = useParams<{ tokenId: string }>();
   const { logout } = usePrivy();
   const { wallets } = useWallets();
@@ -60,7 +62,7 @@ export default function DashboardPage() {
 
   const ensureCorrectChain = useCallback(async (): Promise<ethers.BrowserProvider | null> => {
     if (!evmWallet) {
-      setChainError('Кошелёк не найден.');
+      setChainError(t('wallet.notFound'));
       return null;
     }
     try {
@@ -71,13 +73,13 @@ export default function DashboardPage() {
         try {
           await p.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x138B' }] });
         } catch {
-          setChainError('Требуется переключиться на Mantle Sepolia.');
+          setChainError(t('wallet.switchNetwork'));
           return null;
         }
       }
       return ep;
     } catch {
-      setChainError('Не удалось проверить сеть.');
+      setChainError(t('wallet.checkFailed'));
       return null;
     }
   }, [evmWallet]);
@@ -107,16 +109,16 @@ export default function DashboardPage() {
           <nav className="landing-header__nav">
             <span className="text-xs text-gray-500">Token #{routeTokenId ?? '—'}</span>
             <button className="btn btn-primary" onClick={() => logout()}>
-              Выйти
+              {t('nav.logout')}
             </button>
           </nav>
         </div>
       </header>
 
       <section className="section-container" style={{ paddingTop: '6rem' }}>
-        <p className="section-label">Дашборд</p>
+        <p className="section-label">{t('dashboard.title')}</p>
 
-        {nftLoading && <p className="text-text-muted text-center">Загружаем твоего крота…</p>}
+        {nftLoading && <p className="text-text-muted text-center">{t('dashboard.loading')}</p>}
 
         {!nftLoading && hasMinted && nft ? (
           <>
@@ -148,7 +150,7 @@ export default function DashboardPage() {
                   onClick={() => setShowChat(!showChat)}
                   style={{ width: '100%' }}
                 >
-                  {showChat ? 'Скрыть чат' : 'Чат с кротом 🗣️'}
+                  {showChat ? t('chat.hide') : t('chat.show')}
                 </button>
               </div>
             </div>
@@ -171,7 +173,7 @@ export default function DashboardPage() {
         ) : (
           !nftLoading && (
             <div className="dashboard-empty" style={{ textAlign: 'center' }}>
-              <p className="text-text-muted mb-4">У тебя пока нет крота.</p>
+              <p className="text-text-muted mb-4">{t('dashboard.noMole')}</p>
               <MoleMintButton
                 minting={minting}
                 error={mintError ?? chainError}

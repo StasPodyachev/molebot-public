@@ -124,5 +124,9 @@ const en = {
 
   // Lang
   "lang.switch": "Русский",
+  "nav.logout": "Logout",
+  "wallet.notFound": "Wallet not found.",
+  "wallet.switchNetwork": "Please switch to Mantle Sepolia.",
+  "wallet.checkFailed": "Failed to check network.",
 };
 export default en;
