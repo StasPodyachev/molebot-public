@@ -17,6 +17,7 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useT } from "./i18n";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -176,29 +177,26 @@ function FadeInSection({ children, className = "" }: { children: React.ReactNode
 }
 
 /* -------------------------------------------------------------------------- */
-/* Level data                                                                 */
-/* -------------------------------------------------------------------------- */
-
-const levelData = [
-  { emoji: "🌱", name: "Спящий Крот", xp: "0 XP", type: "" },
-  { emoji: "⛏️", name: "Землекоп", xp: "150 XP", type: "active" },
-  { emoji: "🔭", name: "Разведчик", xp: "200 XP", type: "" },
-  { emoji: "📈", name: "Трейдер", xp: "300 XP", type: "" },
-  { emoji: "🧠", name: "Стратег", xp: "500 XP", type: "" },
-  { emoji: "👑", name: "Мастер Хайва", xp: "1000 XP", type: "" },
-  { emoji: "⚡", name: "Альфа-Крот", xp: "2000 XP", type: "gold" },
-  { emoji: "🐉", name: "Мифический", xp: "10 000 XP", type: "gold" },
-];
-
-/* -------------------------------------------------------------------------- */
 /* LandingPage                                                                */
 /* -------------------------------------------------------------------------- */
 
 export default function LandingPage({ onActivate, onGift, authenticated = false, ready = true }: LandingPageProps) {
+  const { t, lang, setLang } = useT();
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
+
+  const levelData = [
+    { emoji: "🌱", name: t("levels.sleeper"), xp: "0 XP", type: "" },
+    { emoji: "⛏️", name: t("levels.digger"), xp: "150 XP", type: "active" },
+    { emoji: "🔭", name: t("levels.scout"), xp: "200 XP", type: "" },
+    { emoji: "📈", name: t("levels.trader"), xp: "300 XP", type: "" },
+    { emoji: "🧠", name: t("levels.strategist"), xp: "500 XP", type: "" },
+    { emoji: "👑", name: t("levels.hivemaster"), xp: "1000 XP", type: "" },
+    { emoji: "⚡", name: t("levels.alpha"), xp: "2000 XP", type: "gold" },
+    { emoji: "🐉", name: t("levels.mythic"), xp: "10 000 XP", type: "gold" },
+  ];
 
   const handleGift = onGift ?? onActivate;
 
@@ -335,6 +333,8 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
         .landing-header__actions { display: flex; align-items: center; gap: var(--space-3); }
         .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-full); color: var(--color-text-muted); background: transparent; cursor: pointer; border: none; }
         .theme-toggle-btn:hover { color: var(--color-text); background: var(--color-surface-offset); }
+        .lang-toggle-btn { display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-full); color: var(--color-text-muted); background: transparent; cursor: pointer; border: 1px solid var(--color-border); font-family: var(--font-display); font-weight: 600; font-size: var(--text-xs); }
+        .lang-toggle-btn:hover { color: var(--color-text); background: var(--color-surface-offset); border-color: var(--color-text-faint); }
 
         /* ── Hero ── */
         .hero { position: relative; min-height: 92svh; display: grid; place-items: center; overflow: hidden; padding-block: clamp(var(--space-16), 10vw, var(--space-32)); }
@@ -458,19 +458,22 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
             Molebot
           </button>
 
-          <nav className="landing-header__nav" role="navigation" aria-label="Основная навигация">
-            <a href="#how">Как работает</a>
-            <a href="#security">Безопасность</a>
-            <a href="#levels">Уровни</a>
-            <a href="#mint">Минт</a>
+          <nav className="landing-header__nav" role="navigation" aria-label={t("nav.main")}>
+            <a href="#how">{t("nav.how")}</a>
+            <a href="#security">{t("nav.security")}</a>
+            <a href="#levels">{t("nav.levels")}</a>
+            <a href="#mint">{t("nav.mint")}</a>
           </nav>
 
           <div className="landing-header__actions">
-            <button className="theme-toggle-btn" onClick={toggleTheme} aria-label="Переключить тему">
+            <button className="lang-toggle-btn" onClick={() => setLang(lang === "ru" ? "en" : "ru")} aria-label={t("lang.switch")}>
+              {t("lang.switch")}
+            </button>
+            <button className="theme-toggle-btn" onClick={toggleTheme} aria-label={t("nav.theme")}>
               <ThemeIcon theme={theme} />
             </button>
             <button type="button" className="btn btn--primary" onClick={onActivate} disabled={!ready}>
-              {authenticated ? "Открыть дашборд" : "Создать крота"}
+              {authenticated ? t("dashboard.open") : t("nav.create")}
             </button>
           </div>
         </div>
@@ -487,26 +490,25 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
             </div>
 
             <h1 className="hero__headline" id="hero-title">
-              Твой крот<br />
-              торгует.<br />
-              <em>Сам.</em>
+              {t("hero.line1")}<br />
+              {t("hero.line2")}<br />
+              <em>{t("hero.line3")}</em>
             </h1>
 
             <p className="hero__sub">
-              Molebot — живой NFT с ИИ-агентом внутри. Пока ты занимаешься своими делами,
-              крот анализирует рынок, открывает сделки и обновляет своё настроение.
+              {t("hero.sub")}
             </p>
 
             <div className="hero__actions">
               <button type="button" className="btn btn--primary btn--lg" onClick={onActivate} disabled={!ready}>
-                🐾 Создать крота
+                {t("hero.cta_create")}
               </button>
               <a href="#levels" className="btn btn--ghost btn--lg">
-                Уровни →
+                {t("hero.cta_levels")}
               </a>
             </div>
 
-            <div className="hero__social-proof" role="group" aria-label="Социальное доказательство">
+            <div className="hero__social-proof" role="group" aria-label={t("stats.title")}>
               <div className="hero__avatars" aria-hidden="true" style={{ display: "flex" }}>
                 {[0, 1, 2, 3].map((i) => (
                   <div key={i} className="hero__avatar" style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid var(--color-bg)", marginLeft: i > 0 ? -8 : 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", background: "var(--color-surface-dynamic)" }}>
@@ -515,7 +517,7 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
                 ))}
               </div>
               <span>
-                Уже <strong>{animatedCount}</strong> кротов торгуют на testnet
+                {t("hero.social_proof").replace("{count}", String(animatedCount))}
               </span>
             </div>
           </div>
@@ -524,16 +526,16 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
             <div className="hero__image-card">
               <img
                 src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/46439875-d13f-4c97-bb46-9d9959be6172.png"
-                alt="Molebot — ИИ-крот за торговым терминалом"
+                alt={t("img.hero_alt")}
                 width="520" height="360"
                 loading="eager"
               />
               <div className="hero__mood-pill">
-                <span>😊</span> <span>Доволен · +3.2% сегодня</span>
+                <span>😊</span> <span>{t("hero.mood_happy")}</span>
               </div>
               <div className="hero__stat-pill">
                 <span className="hero__stat-up">▲ 14.80 MNT</span>
-                <span style={{ color: "var(--color-text-muted)" }}>за 24ч</span>
+                <span style={{ color: "var(--color-text-muted)" }}>{t("hero.per_24h")}</span>
               </div>
             </div>
           </div>
@@ -543,15 +545,15 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
       {/* ═══════════════════════════════════════════════ HOW IT WORKS ═══ */}
       <section className="steps section" id="how" aria-labelledby="how-title">
         <div className="container">
-          <p className="section-label">Как это работает</p>
-          <h2 className="section-title" id="how-title">Три простых шага</h2>
-          <p className="section-sub">Никаких seed phrase. Никакой ручной торговли. Просто твой крот, который работает.</p>
+          <p className="section-label">{t("how.section_label")}</p>
+          <h2 className="section-title" id="how-title">{t("how.title")}</h2>
+          <p className="section-sub">{t("how.sub")}</p>
 
           <div className="steps__grid">
             {[
-              { num: "1", title: "Минтни NFT-крота", desc: "Войди через Privy, создай своего крота и пополни его депозит в MNT. Каждый крот уникален — своя ДНК, свой характер." },
-              { num: "2", title: "Крот торгует сам", desc: "ИИ-агент анализирует рынок, принимает решения и исполняет сделки через Agni Finance на Mantle. Ключи остаются у тебя — агент не может вывести средства без твоего подтверждения." },
-              { num: "3", title: "Следи за настроением", desc: "P&L виден в реальном времени. Крот счастлив в прибыльный день, грустит в убыточный. NFT-метаданные обновляются on-chain — как тамагочи, только может заработать." },
+              { num: "1", title: t("how.step1_title"), desc: t("how.step1_desc") },
+              { num: "2", title: t("how.step2_title"), desc: t("how.step2_desc") },
+              { num: "3", title: t("how.step3_title"), desc: t("how.step3_desc") },
             ].map((step) => (
               <FadeInSection key={step.num}>
                 <article className="step-card">
@@ -573,7 +575,7 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
               <div className="nft-card">
                 <img
                   src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/272c4265-2b6b-457a-bf61-d6f82c5c7473.png"
-                  alt="Три настроения крота"
+                  alt={t("img.mood_alt")}
                   width="480" height="480"
                   loading="lazy"
                   className="nft-card__img"
@@ -582,17 +584,17 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)" }}>
                     <div>
                       <div className="nft-card__name">Molebot #042</div>
-                      <div className="nft-card__serial">Разведчик · Уровень 2</div>
+                      <div className="nft-card__serial">{t("nft.demo_subtitle")}</div>
                     </div>
-                    <span className="nft-mood-badge nft-mood-badge--happy">😊 Доволен</span>
+                    <span className="nft-mood-badge nft-mood-badge--happy">😊 {t("mood.happy")}</span>
                   </div>
                   <div className="nft-card__stats">
                     <div className="nft-stat">
-                      <div className="nft-stat__label">Сегодня</div>
+                      <div className="nft-stat__label">{t("nft.today")}</div>
                       <div className="nft-stat__value nft-stat__value--up">+3.2%</div>
                     </div>
                     <div className="nft-stat">
-                      <div className="nft-stat__label">Всего сделок</div>
+                      <div className="nft-stat__label">{t("nft.total_trades")}</div>
                       <div className="nft-stat__value">127</div>
                     </div>
                     <div className="nft-stat">
@@ -605,17 +607,16 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
             </FadeInSection>
 
             <FadeInSection>
-              <p className="section-label">Живой NFT</p>
-              <h2 className="section-title" id="mood-title">Настроение меняется<br />вместе с рынком</h2>
+              <p className="section-label">{t("nft.section_label")}</p>
+              <h2 className="section-title" id="mood-title">{t("nft.headline1")}<br />{t("nft.headline2")}</h2>
               <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-lg)", lineHeight: 1.6, marginBottom: "var(--space-8)", maxWidth: "44ch" }}>
-                Каждый Molebot — это живой on-chain объект. Его метаданные обновляются после каждой сделки:
-                настроение, уровень, история — всё видно в Mantle Explorer без входа в интерфейс.
+                {t("nft.desc")}
               </p>
               <ul role="list" style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
                 {[
-                  { emoji: "😊", title: "Доволен", desc: "— прибыльный день, крот активен и энергичен" },
-                  { emoji: "🧐", title: "Сосредоточен", desc: "— нейтральный день, анализирует дальше" },
-                  { emoji: "😴", title: "Спит", desc: "— убыточный день, крот грустит, но не сдаётся" },
+                  { emoji: "😊", title: t("mood.happy"), desc: t("mood.happy_desc") },
+                  { emoji: "🧐", title: t("mood.focused"), desc: t("mood.focused_desc") },
+                  { emoji: "😴", title: t("mood.sleeping"), desc: t("mood.sleeping_desc") },
                 ].map((m) => (
                   <li key={m.title} style={{ display: "flex", gap: "var(--space-3)", alignItems: "flex-start" }}>
                     <span style={{ fontSize: "1.3rem", lineHeight: 1 }}>{m.emoji}</span>
@@ -634,16 +635,16 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
       {/* ═══════════════════════════════════════════════ SECURITY ═══ */}
       <section className="security section" id="security" aria-labelledby="security-title">
         <div className="container">
-          <p className="section-label">Безопасность</p>
-          <h2 className="section-title" id="security-title">Агент торгует.<br />Деньги — твои.</h2>
-          <p className="section-sub">Нулевое доверие по умолчанию. Каждый уровень архитектуры не может обойти предыдущий.</p>
+          <p className="section-label">{t("security.section_label")}</p>
+          <h2 className="section-title" id="security-title">{t("security.headline1")}<br />{t("security.headline2")}</h2>
+          <p className="section-sub">{t("security.sub")}</p>
 
           <div className="features-bento">
             {[
-              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>, title: "Ключи никогда не покидают встроенный кошелёк", desc: "Приватный ключ хранится во встроенном кошельке Privy — изолированном окружении. Агент подписывает транзакции только по разрешённым правилам.", tag: "Privy Embedded Wallet", span: true },
-              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, title: "Вывод — только через тебя", desc: "Любой вывод средств требует подписи EIP-712 от твоего кошелька. Крот физически не может перевести деньги без твоего одобрения.", tag: "EIP-712 Signing", span: false },
-              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>, title: "Прозрачно on-chain", desc: "Все сделки и решения агента фиксируются on-chain на Mantle — их можно проверить в Mantle Explorer в любой момент.", tag: "Mantle On-chain", span: false },
-              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>, title: "Лучшая цена на каждую сделку", desc: "Agni Finance агрегирует ликвидность DEX-ов экосистемы Mantle — агент всегда находит оптимальный маршрут с низкими комиссиями.", tag: "Agni Finance", span: false },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>, title: t("security.feature1_title"), desc: t("security.feature1_desc"), tag: "Privy Embedded Wallet", span: true },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, title: t("security.feature2_title"), desc: t("security.feature2_desc"), tag: "EIP-712 Signing", span: false },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>, title: t("security.feature3_title"), desc: t("security.feature3_desc"), tag: "Mantle On-chain", span: false },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>, title: t("security.feature4_title"), desc: t("security.feature4_desc"), tag: "Agni Finance", span: false },
             ].map((feat, i) => (
               <FadeInSection key={i} className="feature-tile">
                 <div className="feature-icon" aria-hidden="true">{feat.icon}</div>
@@ -659,11 +660,11 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
       {/* ═══════════════════════════════════════════════ LEVELS ═══ */}
       <section className="levels section" id="levels" aria-labelledby="levels-title">
         <div className="container container--wide">
-          <p className="section-label">Прогрессия</p>
-          <h2 className="section-title" id="levels-title">Крот растёт вместе<br />с торговой историей</h2>
-          <p className="section-sub">Уровни начисляются автоматически on-chain. Чем активнее крот — тем выше статус на вторичном рынке.</p>
+          <p className="section-label">{t("levels.section_label")}</p>
+          <h2 className="section-title" id="levels-title">{t("levels.headline1")}<br />{t("levels.headline2")}</h2>
+          <p className="section-sub">{t("levels.sub")}</p>
 
-          <div className="levels-track" role="list" aria-label="Уровни Molebot">
+          <div className="levels-track" role="list" aria-label={t("levels.title")}>
             {levelData.map((lvl, i) => (
               <React.Fragment key={lvl.name}>
                 <FadeInSection>
@@ -690,7 +691,7 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
               <div className="gift-image">
                 <img
                   src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/937c7569-9f52-4fb6-8b2d-6bb42d0600f5.png"
-                  alt="Molebot как подарок — крот в светящейся подарочной коробке"
+                  alt={t("img.gift_alt")}
                   width="480" height="480"
                   loading="lazy"
                 />
@@ -698,11 +699,11 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
             </FadeInSection>
             <FadeInSection>
               <div className="gift-text">
-                <p className="section-label">Подарок</p>
-                <h2 className="section-title" id="gift-title">Подари крота.<br />С депозитом.</h2>
-                <p>Минтни Molebot в подарок и положи стартовый баланс в MNT. Получатель активирует его по ссылке и сразу начинает. Не нужно объяснять, что такое Web3.</p>
+                <p className="section-label">{t("gift.section_label")}</p>
+                <h2 className="section-title" id="gift-title">{t("gift.headline1")}<br />{t("gift.headline2")}</h2>
+                <p>{t("gift.desc")}</p>
                 <button type="button" className="btn btn--primary btn--lg" onClick={handleGift} disabled={!ready}>
-                  🎁 Подарить крота
+                  {t("gift.button")}
                 </button>
               </div>
             </FadeInSection>
@@ -715,13 +716,13 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
         <div className="container">
           <div className="mint-cta__card">
             <div className="mint-cta__glow" aria-hidden="true" />
-            <h2 className="mint-cta__title" id="mint-title">Твой крот ждёт.</h2>
-            <p className="mint-cta__sub">Создаёшь один раз — и он работает сам. Ты можешь наблюдать, подсказывать и развивать своего крота.</p>
+            <h2 className="mint-cta__title" id="mint-title">{t("cta.title")}</h2>
+            <p className="mint-cta__sub">{t("cta.sub")}</p>
             <div className="mint-cta__actions">
-              <button type="button" className="btn btn--primary btn--lg" onClick={onActivate} disabled={!ready}>🐾 Создать сейчас</button>
-              <button type="button" className="btn btn--ghost btn--lg" onClick={handleGift} disabled={!ready}>🎁 Подарить</button>
+              <button type="button" className="btn btn--primary btn--lg" onClick={onActivate} disabled={!ready}>{t("cta.create")}</button>
+              <button type="button" className="btn btn--ghost btn--lg" onClick={handleGift} disabled={!ready}>{t("cta.gift")}</button>
             </div>
-            <div className="price-tiers" role="group" aria-label="Цены минта">
+            <div className="price-tiers" role="group" aria-label={t("cta.prices_aria")}>
               <div className="price-tier price-tier--active">
                 <div className="price-tier__range">#1–100</div>
                 <div className="price-tier__price">0.05 MNT</div>
@@ -740,7 +741,7 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
               </div>
             </div>
             <p style={{ marginTop: "var(--space-5)", fontSize: "var(--text-xs)", color: "var(--color-text-faint)", position: "relative" }}>
-              5% роялти на вторичке · Без подписки · Без performance fee
+              {t("cta.footer")}
             </p>
           </div>
         </div>
@@ -754,12 +755,12 @@ export default function LandingPage({ onActivate, onGift, authenticated = false,
               <MolebotLogo size={24} />
               Molebot
             </div>
-            <nav className="landing-footer__links" aria-label="Дополнительные ссылки">
-              <a href="https://github.com/StasPodyachev/molebot_mantle" target="_blank" rel="noopener noreferrer">GitHub</a>
-              <a href="https://explorer.sepolia.mantle.xyz" target="_blank" rel="noopener noreferrer">Explorer</a>
-              <a href="https://dorahacks.io" target="_blank" rel="noopener noreferrer">DoraHacks</a>
+            <nav className="landing-footer__links" aria-label={t("footer.aria_label")}>
+              <a href="https://github.com/StasPodyachev/molebot_mantle" target="_blank" rel="noopener noreferrer">{t("footer.github")}</a>
+              <a href="https://explorer.sepolia.mantle.xyz" target="_blank" rel="noopener noreferrer">{t("footer.explorer")}</a>
+              <a href="https://dorahacks.io" target="_blank" rel="noopener noreferrer">{t("footer.hackathon")}</a>
             </nav>
-            <p className="landing-footer__copy">© 2026 Molebot · Built on Mantle</p>
+            <p className="landing-footer__copy">{t("footer.copy")}</p>
           </div>
         </div>
       </footer>
