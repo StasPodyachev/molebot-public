@@ -71,6 +71,18 @@ const PORT = parseInt(process.env.API_PORT ?? '3002', 10);
 const server = createServer((req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
 
+  // CORS headers for all responses
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   // Route: /api/trading/* → TradingRouter, /api/price/* → PriceRouter, /api/strategy/* → StrategyRouter, /api/trade/* → TradeRouter, /api/vault/* → VaultRouter, rest → ChatRouter
   if (url.pathname.startsWith('/api/trading')) {
     tradingRouter.handle(req, res).catch((err) => {
