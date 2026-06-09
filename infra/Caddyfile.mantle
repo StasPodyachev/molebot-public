@@ -1,10 +1,22 @@
-# Caddyfile — VPS (mantle.molebot.org API backend)
-# CF Pages проксирует /api/* и /v1/* сюда по HTTP.
-# HTTPS-терминация — на Cloudflare, Caddy принимает HTTP.
+# Caddyfile — VPS (API + RPC proxy for CF Pages)
 
 :80 {
-	# RPC Proxy — единый endpoint для Privy (обходит 429)
-	# VPS имеет одно steady-соединение вместо 10+ из браузера
+	# CORS headers for all API responses
+	header {
+		Access-Control-Allow-Origin "*"
+		Access-Control-Allow-Methods "GET, POST, OPTIONS"
+		Access-Control-Allow-Headers "Content-Type, Authorization"
+	}
+
+	# Handle CORS preflight
+	@cors_preflight {
+		method OPTIONS
+	}
+	handle @cors_preflight {
+		respond 204
+	}
+
+	# RPC Proxy
 	handle /rpc {
 		reverse_proxy https://rpc.sepolia.mantle.xyz {
 			header_up Host rpc.sepolia.mantle.xyz
@@ -16,11 +28,8 @@
 	# API — mantle-agent
 	handle /api/* {
 		reverse_proxy mantle-agent:3002 {
-			# Пробрасываем реальный IP и протокол клиента
 			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
 			header_up X-Real-IP {remote_host}
-			# Отключаем буферизацию для стриминга LLM-ответов
 			flush_interval -1
 		}
 	}
@@ -29,7 +38,6 @@
 	handle /v1/* {
 		reverse_proxy llm-gateway:3010 {
 			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
 			header_up X-Real-IP {remote_host}
 			flush_interval -1
 		}
@@ -40,7 +48,6 @@
 		reverse_proxy mantle-agent:3002
 	}
 
-	# Всё остальное — 404 (фронтенд на CF Pages)
 	handle {
 		respond "Not Found" 404
 	}
