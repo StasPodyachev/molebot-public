@@ -1,0 +1,45 @@
+const ru = {
+  // Landing
+  "site.title": "Molebot — Твой AI торговый крот",
+  "tagline": "Автономный AI торговый агент, живущий как динамический NFT на Mantle",
+  "mint.button": "Создать крота",
+  "mint.price": "Цена минта",
+  "mint.free": "Бесплатно",
+  "dashboard.open": "Открыть дашборд",
+  "levels.title": "Уровни Molebot",
+  "mood.happy": "Доволен",
+  "mood.focused": "Сосредоточен",
+  "mood.sleeping": "Спит",
+  "security.title": "Безопасность",
+  "security.keys": "Ключи никогда не покидают TEE",
+  "security.withdrawals": "Вывод — только через multisig",
+  "security.onchain": "Прозрачно on-chain",
+  "security.bestprice": "Лучшая цена на каждую сделку",
+  "stats.title": "Социальное доказательство",
+  "nav.dashboard": "Дашборд",
+  "nav.theme": "Переключить тему",
+  "nav.create": "Создать крота",
+  "levels.sleeper": "Спящий Крот",
+  "levels.digger": "Землекоп",
+  "levels.scout": "Разведчик",
+  "levels.trader": "Трейдер",
+  "levels.strategist": "Стратег",
+  "levels.hivemaster": "Мастер Хайва",
+  "levels.alpha": "Альфа-Крот",
+  "levels.mythic": "Мифический",
+
+  // Dashboard
+  "dashboard.title": "Панель управления",
+  "dashboard.loading": "Загружаем твоего крота…",
+  "dashboard.noMole": "У тебя пока нет крота.",
+  "chat.show": "Чат с кротом 🗣️",
+  "chat.hide": "Скрыть чат",
+  "chat.placeholder": "Спроси крота…",
+  "footer.github": "GitHub",
+  "footer.explorer": "Explorer",
+  "footer.hackathon": "DoraHacks",
+
+  // Lang
+  "lang.switch": "English",
+};
+export default ru;

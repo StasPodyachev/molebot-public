@@ -1,0 +1,45 @@
+const en = {
+  // Landing
+  "site.title": "Molebot — Your AI Trading Mole",
+  "tagline": "Autonomous AI trading agent living as a dynamic NFT on Mantle",
+  "mint.button": "Mint a Mole",
+  "mint.price": "Mint price",
+  "mint.free": "Free",
+  "dashboard.open": "Open Dashboard",
+  "levels.title": "Molebot Levels",
+  "mood.happy": "Happy",
+  "mood.focused": "Focused",
+  "mood.sleeping": "Sleeping",
+  "security.title": "Security",
+  "security.keys": "Keys never leave the TEE",
+  "security.withdrawals": "Withdrawal requires your multisig approval",
+  "security.onchain": "Fully on-chain & transparent",
+  "security.bestprice": "Best price on every trade",
+  "stats.title": "Social Proof",
+  "nav.dashboard": "Dashboard",
+  "nav.theme": "Toggle theme",
+  "nav.create": "Mint a Mole",
+  "levels.sleeper": "Sleeper Mole",
+  "levels.digger": "Digger",
+  "levels.scout": "Scout",
+  "levels.trader": "Trader",
+  "levels.strategist": "Strategist",
+  "levels.hivemaster": "Hive Master",
+  "levels.alpha": "Alpha Mole",
+  "levels.mythic": "Mythic",
+
+  // Dashboard
+  "dashboard.title": "Dashboard",
+  "dashboard.loading": "Loading your Mole…",
+  "dashboard.noMole": "You don't have a Mole yet.",
+  "chat.show": "Chat with Mole 🗣️",
+  "chat.hide": "Hide Chat",
+  "chat.placeholder": "Ask your Mole…",
+  "footer.github": "GitHub",
+  "footer.explorer": "Explorer",
+  "footer.hackathon": "DoraHacks",
+
+  // Lang
+  "lang.switch": "Русский",
+};
+export default en;

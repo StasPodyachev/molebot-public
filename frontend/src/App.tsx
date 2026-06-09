@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { LangProvider } from './i18n';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useMoleNFT } from '@/hooks/useMoleNFT';
 import LandingPage from './LandingPage';
@@ -43,7 +44,12 @@ export default function App() {
     }
   }, [authenticated, hasMinted, nft, nftLoading, navigate]);
 
+  const location = useLocation();
+  // Extract lang prefix from path for the LangProvider to detect
+  const langFromPath = location.pathname.match(/^\/(ru|en)/)?.[1];
+
   return (
+    <LangProvider>
     <Routes>
       <Route
         path="/"
@@ -64,7 +70,10 @@ export default function App() {
           </RequireAuth>
         }
       />
+      <Route path="/ru" element={<Navigate to="/" replace />} />
+      <Route path="/en" element={<Navigate to="/" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </LangProvider>
   );
 }
