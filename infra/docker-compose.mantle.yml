@@ -1,0 +1,136 @@
+# =============================================================================
+# docker-compose.mantle.yml — Molebot Mantle Stack
+#
+# Agent (chat billing/response/price) + LLM Gateway + Redis
+# Frontend вынесен на Cloudflare Pages (FE-02), больше не в Docker.
+# =============================================================================
+
+networks:
+  mantle_internal:
+    driver: bridge
+  infra_public:
+    external: true
+    name: infra_public
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Redis — кэш/хранилище usedTxHashes + rate limiter
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --save 60 1 --save 300 10
+    volumes:
+      - redis_data:/data
+    networks:
+      - mantle_internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Mantle agent — chat billing + response + price service
+  # ---------------------------------------------------------------------------
+  mantle-agent:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: mantle-agent:latest
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV:                 production
+      API_PORT:                 3002
+      # ── Secrets from Infisical ──────────────────────────────────────
+      NFT_CONTRACT_ADDRESS:     ${NFT_CONTRACT_ADDRESS}
+      AGENT_WALLET_ADDRESS:     ${AGENT_WALLET_ADDRESS}
+      MANTLE_RPC_URL:           ${MANTLE_RPC_URL}
+      SAFE_ADDRESS:             ${SAFE_ADDRESS}
+      AI_CREDITS_CONTRACT_ADDRESS: ${AI_CREDITS_CONTRACT_ADDRESS}
+      # ── Static config ──────────────────────────────────────────────
+      CHAIN_ID:                 5003
+      CHAT_FEE_WEI:             1000000000000000
+      TX_MAX_AGE_SEC:           600
+      REDIS_URL:                redis://redis:6379
+      REDIS_TTL_SEC:            86400
+      SQLITE_PATH:              /app/data/used_tx.db
+      LLM_GATEWAY_URL:          http://llm-gateway:3010
+      GITHUB_REPO:              StasPodyachev/molebot_mantle
+
+      # ── Agni Finance (INFRA-03) ────────────────────────────────────
+      AGNI_SWAP_ROUTER:          ${AGNI_SWAP_ROUTER}
+      AGNI_QUOTER:               ${AGNI_QUOTER}
+      AGNI_MAX_TRADE_AMOUNT:     ${AGNI_MAX_TRADE_AMOUNT}
+      AGNI_DAILY_LIMIT:           ${AGNI_DAILY_LIMIT}
+      AGNI_DEFAULT_SLIPPAGE:     ${AGNI_DEFAULT_SLIPPAGE}
+    volumes:
+      - agent_data:/app/data
+    networks:
+      - mantle_internal
+      - infra_public
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/api/chat/health', r=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # LLM Gateway — прокси к LLM провайдеру (сейчас заглушка)
+  # ---------------------------------------------------------------------------
+  llm-gateway:
+    build:
+      context: ../packages/llm-gateway
+      dockerfile: Dockerfile
+    image: ghcr.io/staspodyachev/molebot/llm-gateway:latest
+    restart: unless-stopped
+    environment:
+      LLM_GATEWAY_PORT:         3010
+      # ── Secrets from Infisical ──────────────────────────────────────
+      LLM_API_KEY:              ${LLM_API_KEY}
+      MANTLE_RPC_URL:           ${MANTLE_RPC_URL}
+      AI_CREDITS_CONTRACT_ADDRESS: ${AI_CREDITS_CONTRACT_ADDRESS}
+      # ── Config ─────────────────────────────────────────────────────
+      LLM_STUB_MODE:            ${LLM_STUB_MODE:-false}
+      AI_CREDITS_SKIP_CHECK: ${AI_CREDITS_SKIP_CHECK:-false}
+      LLM_PROVIDER_URL:        ${LLM_PROVIDER_URL:-https://api.deepseek.com}
+      LLM_DEFAULT_MODEL:        ${LLM_DEFAULT_MODEL:-deepseek-chat}
+      CACHE_TTL_SEC:            60
+    networks:
+      - mantle_internal
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', r=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Infisical Agent — sidecar для синхронизации секретов
+  # ---------------------------------------------------------------------------
+  infisical-agent:
+    image: infisical/agent:latest
+    restart: unless-stopped
+    environment:
+      INFISICAL_TOKEN: ${INFISICAL_TOKEN:-placeholder}
+    volumes:
+      - ./infisical-agent.yaml:/etc/infisical/agent.yaml:ro
+      - infisical_output:/infisical-output
+    networks:
+      - mantle_internal
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  redis_data:
+  agent_data:
+  infisical_output:

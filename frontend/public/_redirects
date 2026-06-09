@@ -1,0 +1,5 @@
+# Cloudflare Pages _redirects
+# GET-запросы работают через CF Pages proxy.
+# POST идёт напрямую на VPS (apiBase = http://178.105.123.110, CORS включён).
+/api/*  http://178.105.123.110/api/:splat  200
+/v1/*   http://178.105.123.110/v1/:splat  200

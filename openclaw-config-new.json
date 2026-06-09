@@ -1,0 +1,116 @@
+{
+  "version": 2,
+  "owner": "telegram:1009552149",
+  "workspaceRoot": "/home/x/.openclaw/workspace",
+
+  "agents": {
+    "default": "planner",
+    "list": [
+      {
+        "id": "planner",
+        "title": "Planner / Architect",
+        "workspace": "/home/x/.openclaw/workspace/planner",
+        "agentDir": "/home/x/molebot_mantle/agents",
+        "instructionsFile": "planner.md",
+        "sandbox": { "mode": "off", "scope": "agent", "workspaceAccess": "rw" },
+        "model": "deepseek-v4-flash",
+        "tools": {
+          "allow": ["fs.read", "fs.write", "git.read", "shell.run"],
+          "deny": ["git.push", "git.merge", "deploy.run"]
+        }
+      },
+      {
+        "id": "coder",
+        "title": "Coder",
+        "workspace": "/home/x/.openclaw/workspace/coder",
+        "agentDir": "/home/x/molebot_mantle/agents",
+        "instructionsFile": "coder.md",
+        "sandbox": { "mode": "off", "scope": "agent", "workspaceAccess": "rw" },
+        "model": "deepseek-v4-pro",
+        "tools": {
+          "allow": ["fs.read", "fs.write", "git.read", "git.branch", "git.commit", "git.push", "shell.run"],
+          "deny": ["git.merge", "deploy.run"]
+        }
+      },
+      {
+        "id": "reviewer",
+        "title": "Reviewer",
+        "workspace": "/home/x/.openclaw/workspace/reviewer",
+        "agentDir": "/home/x/molebot_mantle/agents",
+        "instructionsFile": "reviewer.md",
+        "sandbox": { "mode": "off", "scope": "agent", "workspaceAccess": "rw" },
+        "model": "deepseek-reasoner",
+        "tools": {
+          "allow": ["fs.read", "git.read", "shell.run"],
+          "deny": ["fs.write", "git.push", "git.merge", "deploy.run"]
+        }
+      },
+      {
+        "id": "deployer",
+        "title": "Deployer",
+        "workspace": "/home/x/.openclaw/workspace/deployer",
+        "agentDir": "/home/x/molebot_mantle/agents",
+        "instructionsFile": "deployer.md",
+        "sandbox": { "mode": "off", "scope": "agent", "workspaceAccess": "rw" },
+        "model": "deepseek-v4-flash",
+        "tools": {
+          "allow": ["fs.read", "git.read", "shell.run", "deploy.run"],
+          "deny": ["fs.write", "git.push", "git.merge"]
+        }
+      }
+    ]
+  },
+
+  "channels": {
+    "telegram": {
+      "accounts": {
+        "planner": {
+          "botTokenRef": "infisical://molebot-platform/Development/TG_TOKEN_PLANNER",
+          "botUsername": "ocstas_bot",
+          "groupPolicy": "owner-only"
+        },
+        "coder": {
+          "botTokenRef": "infisical://molebot-platform/Development/TG_TOKEN_CODER",
+          "botUsername": "OC_razrab_bot",
+          "groupPolicy": "owner-only"
+        },
+        "reviewer": {
+          "botTokenRef": "infisical://molebot-platform/Development/TG_TOKEN_REVIEWER",
+          "botUsername": "OC_TESTER1_bot",
+          "groupPolicy": "owner-only"
+        },
+        "deployer": {
+          "botTokenRef": "infisical://molebot-platform/Development/TG_TOKEN_OC_DEPLOYER_BOT",
+          "botUsername": "OC_deployer_bot",
+          "groupPolicy": "owner-only"
+        }
+      }
+    }
+  },
+
+  "bindings": [
+    { "account": "planner",  "agent": "planner"  },
+    { "account": "coder",    "agent": "coder"    },
+    { "account": "reviewer", "agent": "reviewer" },
+    { "account": "deployer", "agent": "deployer" }
+  ],
+
+  "routing": {
+    "fallbackAgent": "planner",
+    "ambiguous": "reject"
+  },
+
+  "tools": {
+    "agentToAgent": { "enabled": false },
+    "sessions": { "visibility": "self" },
+    "deploy": {
+      "requireConfirmation": true,
+      "confirmChannel": "deployer"
+    }
+  },
+
+  "notifications": {
+    "channel": "deployer",
+    "events": ["deploy.requested", "deploy.done", "deploy.failed", "error.critical", "status.requested"]
+  }
+}

@@ -1,0 +1,154 @@
+# =============================================================================
+# docker-compose.demo.yml — Molebot Demo Stack (локальный запуск)
+#
+# Поднимает весь стек одной командой:
+#   docker compose -f infra/docker-compose.demo.yml --env-file .env.demo up -d
+#
+# Сервисы:
+#   redis         — кэш / usedTxHashes (порт 6379)
+#   llm-gateway   — прокси к LLM (порт 3010)
+#   mantle-agent  — chat billing + response + price (порт 3002)
+#   web           — Next.js frontend (порт 3000)
+#
+# Отличия от production (docker-compose.mantle.yml):
+#   - build из локального контекста (не тянет образы из registry)
+#   - нет Infisical agent (секреты из .env.demo)
+#   - нет infra_public сети (только bridge для локальной разработки)
+#   - LLM_STUB_MODE=true по умолчанию
+# =============================================================================
+
+networks:
+  mantle_internal:
+    driver: bridge
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Redis — кэш хранилище usedTxHashes + rate limiter
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --save 60 1 --save 300 10
+    volumes:
+      - redis_data:/data
+    networks:
+      - mantle_internal
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # LLM Gateway — прокси к DeepSeek (stub mode для демо)
+  # ---------------------------------------------------------------------------
+  llm-gateway:
+    build:
+      context: ../packages/llm-gateway
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      LLM_GATEWAY_PORT:         ${LLM_GATEWAY_PORT:-3010}
+      LLM_API_KEY:              ${LLM_API_KEY:-sk-demo-placeholder}
+      LLM_PROVIDER_URL:         ${LLM_PROVIDER_URL:-https://api.deepseek.com}
+      LLM_DEFAULT_MODEL:        ${LLM_DEFAULT_MODEL:-deepseek-chat}
+      LLM_STUB_MODE:            ${LLM_STUB_MODE:-true}
+      MANTLE_RPC_URL:           ${MANTLE_RPC_URL:-https://rpc.sepolia.mantle.xyz}
+      AI_CREDITS_CONTRACT_ADDRESS: ${AI_CREDITS_CONTRACT_ADDRESS:-0x15Fa9046d2db9E38308Ed9bbA8F8e872beBF6B64}
+      CACHE_TTL_SEC:            60
+    networks:
+      - mantle_internal
+    ports:
+      - "3010:3010"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', r=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Mantle Agent — chat billing + response + price service
+  # ---------------------------------------------------------------------------
+  mantle-agent:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV:                 production
+      API_PORT:                 3002
+      # ── Contracts ──────────────────────────────────────────────────
+      NFT_CONTRACT_ADDRESS:     ${NFT_CONTRACT_ADDRESS}
+      AGENT_WALLET_ADDRESS:     ${AGENT_WALLET_ADDRESS}
+      MANTLE_RPC_URL:           ${MANTLE_RPC_URL:-https://rpc.sepolia.mantle.xyz}
+      SAFE_ADDRESS:             ${SAFE_ADDRESS}
+      AI_CREDITS_CONTRACT_ADDRESS: ${AI_CREDITS_CONTRACT_ADDRESS}
+      # ── Config ───────────────────────────────────────────────────────
+      CHAIN_ID:                 5003
+      CHAT_FEE_WEI:             1000000000000000
+      TX_MAX_AGE_SEC:           600
+      REDIS_URL:                redis://redis:6379
+      REDIS_TTL_SEC:            86400
+      SQLITE_PATH:              /app/data/used_tx.db
+      LLM_GATEWAY_URL:          http://llm-gateway:3010
+      GITHUB_REPO:              StasPodyachev/molebot_mantle
+      # ── Agni Finance ──────────────────────────────────────────────
+      AGNI_SWAP_ROUTER:          ${AGNI_SWAP_ROUTER}
+      AGNI_QUOTER:               ${AGNI_QUOTER}
+      AGNI_MAX_TRADE_AMOUNT:     ${AGNI_MAX_TRADE_AMOUNT:-1000}
+      AGNI_DAILY_LIMIT:           ${AGNI_DAILY_LIMIT:-5000}
+      AGNI_DEFAULT_SLIPPAGE:     ${AGNI_DEFAULT_SLIPPAGE:-0.5}
+    volumes:
+      - agent_data:/app/data
+    networks:
+      - mantle_internal
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/api/chat/health', r=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Frontend — Next.js standalone
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mantle-agent:
+        condition: service_healthy
+    environment:
+      NODE_ENV:                 production
+      PORT:                     3000
+      HOSTNAME:                 0.0.0.0
+      NEXT_PUBLIC_PRIVY_APP_ID: ${NEXT_PUBLIC_PRIVY_APP_ID}
+      NEXT_PUBLIC_API_URL:      ${NEXT_PUBLIC_API_URL:-http://mantle-agent:3002}
+    networks:
+      - mantle_internal
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  redis_data:
+  agent_data:

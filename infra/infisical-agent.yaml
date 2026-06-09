@@ -1,0 +1,24 @@
+# =============================================================================
+# infisical-agent.yaml — Infisical Agent config
+#
+# Запускается как Docker sidecar. Пишет .env на shared volume.
+# Другие сервисы маунтят volume и читают через env_file.
+#
+# Docs: https://infisical.com/docs/infisical-agent/overview
+# =============================================================================
+
+agent:
+  # Автоопределение: INFISICAL_TOKEN → service token, INFISICAL_CLIENT_ID → universal-auth
+  auth:
+    type: auto
+
+  http:
+    port: 8080
+
+  secrets:
+    - path: /infisical-output/.env
+      format: dotenv
+      env-sync:
+        project-id: "fd4bb536-fa11-4e9d-84f5-34e2efb5b83d"
+        env: "prod"
+        interval: 60
