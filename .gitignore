@@ -65,3 +65,4 @@ __pycache__/
 # Temp
 tmp/
 temp/
+frontend/.trigger
