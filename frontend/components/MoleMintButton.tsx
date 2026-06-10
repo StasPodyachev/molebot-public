@@ -7,18 +7,18 @@ interface MoleMintButtonProps {
   error: string | null;
   txHash: string | null;
   onMint: () => void;
-  /** URL на explorer для txHash */
+  /** Explorer URL for txHash */
   explorerTx?: (hash: string) => string;
 }
 
 /**
- * MoleMintButton — кнопка минта NFT с отображением статуса
+ * MoleMintButton — NFT mint button with status display
  *
- * Состояния:
- * - minting=false → кнопка "Mint Molebot (0.05 MNT)"
- * - minting=true → спиннер + "Minting..."
- * - error → красное сообщение об ошибке
- * - txHash → ссылка на explorer
+ * States:
+ * - minting=false → button "Mint Molebot (0.05 MNT)"
+ * - minting=true → spinner + "Minting..."
+ * - error → red error message
+ * - txHash → explorer link
  */
 export default function MoleMintButton({
   minting,
@@ -56,7 +56,7 @@ export default function MoleMintButton({
 
       {txHash && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm w-full">
-          <p className="text-mole-400 mb-1">✅ Транзакция отправлена!</p>
+          <p className="text-mole-400 mb-1">✅ Transaction submitted!</p>
           <a
             href={explorer(txHash)}
             target="_blank"

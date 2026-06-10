@@ -29,23 +29,23 @@ interface StrategyPanelProps {
 
 const STRATEGY_META: Record<string, { name: string; description: string; risk: number }> = {
   conservative: {
-    name: 'Консервативная',
-    description: 'Минимальный риск. Только стабильные пары, малые объёмы.',
+    name: 'Conservative',
+    description: 'Minimal risk. Stable pairs only, small volumes.',
     risk: 1,
   },
   aggressive: {
-    name: 'Агрессивная',
-    description: 'Высокий риск/доходность. Новые токены, крупные позиции.',
+    name: 'Aggressive',
+    description: 'High risk/reward. New tokens, large positions.',
     risk: 4,
   },
   dca: {
     name: 'DCA',
-    description: 'Усреднение долларовой стоимости. Регулярные покупки малыми порциями.',
+    description: 'Dollar cost averaging. Regular purchases in small increments.',
     risk: 2,
   },
   hodl: {
     name: 'HODL',
-    description: 'Купил и держишь. Минимум сделок, долгосрочная перспектива.',
+    description: 'Buy and hold. Minimal trades, long-term perspective.',
     risk: 2,
   },
 };
@@ -88,10 +88,10 @@ const RISK_DOTS: Record<number, string> = {
 
 function timeAgo(ts: number): string {
   const secs = Math.max(0, Math.floor(Date.now() / 1000) - ts);
-  if (secs < 60) return 'только что';
-  if (secs < 3600) return `${Math.floor(secs / 60)}м назад`;
-  if (secs < 86400) return `${Math.floor(secs / 3600)}ч назад`;
-  return `${Math.floor(secs / 86400)}д назад`;
+  if (secs < 60) return 'just now';
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -117,11 +117,11 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
           setData(d);
           setError(null);
         } else {
-          setError(d.errorMessage ?? 'Не удалось загрузить стратегию');
+          setError(d.errorMessage ?? 'Failed to load strategy');
         }
       })
       .catch(() => {
-        setError('Сервис стратегий временно недоступен');
+        setError('Strategy service is temporarily unavailable');
       })
       .finally(() => setLoading(false));
   }, [API, tokenId]);
@@ -146,10 +146,10 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
           // Refresh
           fetchStrategy();
         } else {
-          setError(d.errorMessage ?? 'Не удалось сменить стратегию');
+          setError(d.errorMessage ?? 'Failed to change strategy');
         }
       } catch {
-        setError('Сервис стратегий временно недоступен');
+        setError('Strategy service is temporarily unavailable');
       } finally {
         setChanging(false);
       }
@@ -180,7 +180,7 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-100">Стратегия</h3>
+        <h3 className="text-sm font-semibold text-gray-100">Strategy</h3>
         <button
           type="button"
           onClick={() => setPickerOpen(!pickerOpen)}
@@ -190,10 +190,10 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
           {changing ? (
             <>
               <span className="w-2.5 h-2.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-              Меняю...
+              Changing...
             </>
           ) : (
-            'Сменить'
+            'Change'
           )}
         </button>
       </div>
@@ -201,7 +201,7 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
       {/* Strategy picker popup */}
       {pickerOpen && (
         <div className="bg-gray-800/80 border border-gray-700 rounded-xl p-3 space-y-1.5">
-          <p className="text-xs text-gray-500 mb-1">Выбери стратегию:</p>
+          <p className="text-xs text-gray-500 mb-1">Select a strategy:</p>
           {STRATEGY_KEYS.map((key) => {
             const meta = STRATEGY_META[key];
             const isActive = data?.strategy === key;
@@ -223,7 +223,7 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">{meta.description}</p>
                 {isActive && (
-                  <span className="text-xs text-mole-400 mt-1 inline-block">✓ Активна</span>
+                  <span className="text-xs text-mole-400 mt-1 inline-block">✓ Active</span>
                 )}
               </button>
             );
@@ -242,12 +242,12 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
           </p>
           {data?.updatedAt && (
             <p className="text-xs text-gray-600 mt-1">
-              Обновлено: {timeAgo(data.updatedAt)}
+              Updated: {timeAgo(data.updatedAt)}
             </p>
           )}
         </div>
         <div className="text-xs text-gray-500">
-          Риск: {data ? RISK_DOTS[data.risk] ?? '—' : '—'}
+          Risk: {data ? RISK_DOTS[data.risk] ?? '—' : '—'}
         </div>
       </div>
 
@@ -261,12 +261,12 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
           </span>
           <div>
             <p className={`text-sm font-bold ${signalStyle.text}`}>
-              Сигнал: {signal}
+              Signal: {signal}
             </p>
             <p className="text-xs text-gray-500">
-              {signal === 'BUY' && 'Крот рекомендует покупать'}
-              {signal === 'SELL' && 'Крот рекомендует продавать'}
-              {signal === 'HOLD' && 'Крот рекомендует держать'}
+              {signal === 'BUY' && 'Mole recommends buying'}
+              {signal === 'SELL' && 'Mole recommends selling'}
+              {signal === 'HOLD' && 'Mole recommends holding'}
             </p>
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function StrategyPanel({ tokenId, apiBase }: StrategyPanelProps) 
           onClick={fetchStrategy}
           className="hover:text-gray-400 transition-colors"
         >
-          ↻ Обновить
+          ↻ Refresh
         </button>
       </div>
 

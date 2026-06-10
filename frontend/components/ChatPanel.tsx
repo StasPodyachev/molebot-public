@@ -76,18 +76,18 @@ const EIP712_CHAT_SESSION_TYPES = {
 /* -------------------------------------------------------------------------- */
 
 const ERROR_HUMAN: Record<string, string> = {
-  INVALID_INPUT: 'Некорректный запрос. Проверьте введённые данные.',
-  INTERNAL_ERROR: 'Внутренняя ошибка сервера. Попробуйте позже.',
-  TxAlreadyUsed: 'Эта транзакция уже использована для чата.',
-  NotTokenOwner: 'Вы не владелец этого NFT.',
-  WrongRecipient: 'MNT-перевод отправлен не на адрес агента.',
-  WrongSender: 'MNT-перевод отправлен не с вашего кошелька.',
-  InsufficientFee: 'Недостаточная сумма перевода (нужно 0.001 MNT).',
-  TxTooOld: 'Транзакция слишком старая. Отправьте новый перевод.',
+  INVALID_INPUT: 'Invalid request. Please check your input.',
+  INTERNAL_ERROR: 'Internal server error. Please try again later.',
+  TxAlreadyUsed: 'This transaction has already been used for chat.',
+  NotTokenOwner: 'You are not the owner of this NFT.',
+  WrongRecipient: 'MNT transfer was not sent to the agent address.',
+  WrongSender: 'MNT transfer was not sent from your wallet.',
+  InsufficientFee: 'Insufficient transfer amount (0.001 MNT required).',
+  TxTooOld: 'Transaction is too old. Please send a new transfer.',
 };
 
 function humanError(code: string, fallback: string): string {
-  return ERROR_HUMAN[code] ?? `Ошибка чата: ${fallback}`;
+  return ERROR_HUMAN[code] ?? `Chat error: ${fallback}`;
 }
 
 function isNetworkError(err: unknown): boolean {
@@ -114,8 +114,8 @@ const MOOD_EMOJI: Record<number, string> = {
 /* -------------------------------------------------------------------------- */
 
 export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
-  // API base: VPS через Cloudflare proxy (HTTPS, без mixed content).
-  // _redirects проксирует GET; POST идёт напрямую на VPS через HTTPS.
+  // API base: VPS via Cloudflare proxy (HTTPS, no mixed content).
+  // _redirects proxies GET; POST goes directly to VPS via HTTPS.
   const API = apiBase || 'https://vps.molebot.org/api';
   const { wallets } = useWallets();
 
@@ -155,19 +155,19 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
         }
       })
       .catch(() => {
-        // Сервер недоступен — покажем кнопку создания сессии
+        // Server unavailable — show session creation button
       });
   }, [API, tokenId]);
 
-  /** Подписать EIP-712 ChatSession через Privy embedded wallet */
+  /** Sign EIP-712 ChatSession via Privy embedded wallet */
   const signChatSession = useCallback(async (): Promise<{ signature: `0x${string}`; timestamp: number }> => {
-    // Privy может выставлять walletClientType как 'privy' или 'embedded' — ищем гибко
+    // Privy may expose walletClientType as 'privy' or 'embedded' — search flexibly
     const wallet = wallets.find(w =>
       typeof w.walletClientType === 'string' &&
       (w.walletClientType.includes('privy') || w.walletClientType.includes('embed'))
     ) ?? wallets[0];
     if (!wallet) {
-      throw new Error('Кошелёк не найден. Подключите кошелёк через Privy и попробуйте снова.');
+      throw new Error('Wallet not found. Please connect your wallet via Privy and try again.');
     }
 
     const provider = await wallet.getEthereumProvider();
@@ -205,7 +205,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
     return { signature, timestamp };
   }, [tokenId, wallets]);
 
-  /** Создать сессию: подписать EIP-712 → POST /api/chat/session */
+  /** Create session: sign EIP-712 → POST /api/chat/session */
   const createSession = useCallback(async () => {
     setSigningSession(true);
     try {
@@ -224,7 +224,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
 
       const _rawSession = await res.text();
       let data: SessionResponse;
-      try { data = JSON.parse(_rawSession); } catch { throw new Error("Сервис чата временно недоступен (пустой ответ)"); }
+      try { data = JSON.parse(_rawSession); } catch { throw new Error("Chat service is temporarily unavailable (empty response)"); }
       if (data.ok && data.sessionActive) {
         setSessionActive(true);
         setRemaining(data.remaining);
@@ -232,7 +232,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
       } else {
         const errMsg = data.errorCode
           ? humanError(data.errorCode, data.errorMessage ?? 'Unknown error')
-          : (data.errorMessage ?? 'Не удалось создать сессию');
+          : (data.errorMessage ?? 'Failed to create session');
         setMessages(prev => [...prev, {
           id: `err-${Date.now()}`,
           role: 'assistant',
@@ -242,7 +242,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
     } catch (caught) {
       console.error('[ChatPanel] createSession error:', caught);
       const msg = isNetworkError(caught)
-        ? 'Сервис чата временно недоступен'
+        ? 'Chat service is temporarily unavailable'
         : caught instanceof Error ? caught.message : String(caught);
       setMessages(prev => [...prev, {
         id: `err-${Date.now()}`,
@@ -268,12 +268,12 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
     setMessages((prev) => [
       ...prev,
       { id: userMsgId, role: 'user', text },
-      { id: thinkMsgId, role: 'assistant', text: 'Крот думает...', pending: true },
+      { id: thinkMsgId, role: 'assistant', text: 'Mole is thinking...', pending: true },
     ]);
     setThinking(true);
 
     try {
-      // В сессионном режиме (FE-24) — шлём только tokenId + message
+      // Session mode (FE-24) — send only tokenId + message
       const chatPayload = { tokenId, message: text };
 
       const res = await fetch(`${API}/chat`, {
@@ -284,7 +284,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
 
       const _rawChat = await res.text();
       let data: ChatResponse;
-      try { data = JSON.parse(_rawChat); } catch { throw new Error("Сервис чата временно недоступен (пустой ответ)"); }
+      try { data = JSON.parse(_rawChat); } catch { throw new Error("Chat service is temporarily unavailable (empty response)"); }
       console.debug('[ChatPanel] POST /api/chat response:', { status: res.status, ok: res.ok, data });
 
       setMessages((prev) => prev.filter((m) => m.id !== thinkMsgId));
@@ -296,7 +296,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
           { id: `asst-${Date.now()}`, role: 'assistant', text: data.reply, mood: data.mood },
         ]);
 
-        // Обновить квоту из ответа (FE-24)
+        // Update quota from response (FE-24)
         if (!CHAT_SKIP_PAYMENT && data.remaining >= 0) {
           setRemaining(data.remaining);
           setSessionLimit(data.spendLimit);
@@ -311,8 +311,8 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
           { id: `err-${Date.now()}`, role: 'assistant', text: `⛔ ${friendly}` },
         ]);
 
-        // Если ошибка из-за отсутствия сессии — сбросить состояние
-        if (data.errorMessage?.includes('Нет активной сессии') || data.errorMessage?.includes('Session exhausted')) {
+        // If error due to missing session — reset state
+        if (data.errorMessage?.includes('No active session') || data.errorMessage?.includes('Session exhausted')) {
           setSessionActive(false);
           setRemaining(0);
         }
@@ -320,7 +320,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
     } catch (caught) {
       console.error('[ChatPanel] POST /api/chat error:', caught);
       const errText = isNetworkError(caught)
-        ? 'Сервис чата временно недоступен'
+        ? 'Chat service is temporarily unavailable'
         : caught instanceof Error ? caught.message : String(caught);
       setMessages((prev) => prev.filter((m) => m.id !== thinkMsgId));
       setMessages((prev) => [
@@ -359,7 +359,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
             Molebot #{tokenId}
           </h2>
           <p className="text-xs text-gray-500">
-            Mood: {MOOD_EMOJI[lastMood] ?? '😐'} {lastMood === 2 ? 'Дерзкий' : lastMood === 0 ? 'Угрюмый' : 'Нейтральный'}
+            Mood: {MOOD_EMOJI[lastMood] ?? '😐'} {lastMood === 2 ? 'Bold' : lastMood === 0 ? 'Grumpy' : 'Neutral'}
           </p>
         </div>
       </div>
@@ -368,7 +368,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
       {!CHAT_SKIP_PAYMENT && sessionActive && sessionLimit < Infinity && (
         <div className="px-4 py-2 border-b border-gray-800/50">
           <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-            <span>Осталось {remaining} / {sessionLimit} сообщений</span>
+            <span>{remaining} / {sessionLimit} messages left</span>
             <span>{progressPct}%</span>
           </div>
           <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
@@ -394,7 +394,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
         {messages.length === 0 && (
           <div className="text-center text-gray-600 mt-12">
             <p className="text-4xl mb-4">🦔</p>
-            <p className="text-sm">Напиши что-нибудь своему кроту!</p>
+            <p className="text-sm">Say something to your mole!</p>
             <p className="text-xs text-gray-700 mt-2">Token #{tokenId}</p>
             {needsSession && !CHAT_SKIP_PAYMENT && (
               <div className="mt-4">
@@ -407,10 +407,10 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
                   {signingSession ? (
                     <>
                       <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                      Подписываю...
+                      Signing...
                     </>
                   ) : (
-                    `Подписать сессию (${SPEND_LIMIT} сообщений)`
+                    `Sign session (${SPEND_LIMIT} messages)`
                   )}
                 </button>
               </div>
@@ -456,7 +456,7 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
         {needsSession && messages.length > 0 && (
           <div className="flex items-center justify-between px-1">
             <span className="text-xs text-yellow-500">
-              {sessionLimit > 0 ? 'Лимит сообщений исчерпан' : 'Требуется подпись сессии'}
+              {sessionLimit > 0 ? 'Message limit reached' : 'Session signature required'}
             </span>
             <button
               type="button"
@@ -467,10 +467,10 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
               {signingSession ? (
                 <>
                   <span className="w-2.5 h-2.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                  Подписываю...
+                  Signing...
                 </>
               ) : (
-                `Подписать ещё ${SPEND_LIMIT}`
+                `Sign another ${SPEND_LIMIT}`
               )}
             </button>
           </div>
@@ -483,10 +483,10 @@ export default function ChatPanel({ tokenId, apiBase }: ChatPanelProps) {
             onChange={(e) => setInput(e.target.value)}
             placeholder={
               needsSession && !CHAT_SKIP_PAYMENT
-                ? 'Подпиши сессию чтобы писать...'
+                ? 'Sign a session to start chatting...'
                 : thinking
-                  ? 'Крот отвечает...'
-                  : 'Напиши кроту...'
+                  ? 'Mole is replying...'
+                  : 'Message your mole...'
             }
             disabled={thinking || needsSession}
             className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-mole-500 focus:ring-1 focus:ring-mole-500/40 disabled:opacity-50 transition-all"

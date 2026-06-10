@@ -7,10 +7,10 @@ interface MoleNFTCardProps {
 }
 
 /**
- * MoleNFTCard — карточка NFT крота
+ * MoleNFTCard — NFT mole card
  *
- * Показывает: ID, изображение (аватар), уровень, mood, PnL, tokenId
- * Тёмная тема, адаптивный дизайн.
+ * Shows: ID, image (avatar), level, mood, PnL, tokenId
+ * Dark theme, responsive design.
  */
 export default function MoleNFTCard({ nft }: MoleNFTCardProps) {
   return (
@@ -41,7 +41,7 @@ export default function MoleNFTCard({ nft }: MoleNFTCardProps) {
 
         <div className="space-y-1.5 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-500">Уровень</span>
+            <span className="text-gray-500">Level</span>
             <span className="text-gray-200">Lvl {nft.levelIndex}</span>
           </div>
           <div className="flex justify-between">

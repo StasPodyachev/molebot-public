@@ -54,10 +54,10 @@ interface TradePanelProps {
 
 function timeAgo(ms: number): string {
   const secs = Math.max(0, Math.floor((Date.now() - ms) / 1000));
-  if (secs < 60) return 'сейчас';
-  if (secs < 3600) return `${Math.floor(secs / 60)}м`;
-  if (secs < 86400) return `${Math.floor(secs / 3600)}ч`;
-  return `${Math.floor(secs / 86400)}д`;
+  if (secs < 60) return 'now';
+  if (secs < 3600) return `${Math.floor(secs / 60)}m`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h`;
+  return `${Math.floor(secs / 86400)}d`;
 }
 
 function fmtUSD(v: number): string {
@@ -94,7 +94,7 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
         if (pos.ok) setPosition(pos.position);
         setError(null);
       })
-      .catch(() => setError('Сервис трейдинга временно недоступен'))
+      .catch(() => setError('Trading service is temporarily unavailable'))
       .finally(() => setLoading(false));
   }, [API, tokenId]);
 
@@ -120,10 +120,10 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
       if (data.ok) {
         await fetchData();
       } else {
-        setError(data.errorMessage ?? 'Не удалось выполнить операцию');
+        setError(data.errorMessage ?? 'Operation failed');
       }
     } catch {
-      setError('Сервис трейдинга временно недоступен');
+      setError('Trading service is temporarily unavailable');
     } finally {
       setActing(false);
     }
@@ -149,7 +149,7 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-100">Трейдинг</h3>
+        <h3 className="text-sm font-semibold text-gray-100">Trading</h3>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -182,7 +182,7 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
               </span>
             </div>
             <span className="text-xs text-gray-500">
-              {position.durationMinutes}м назад
+              {position.durationMinutes}m ago
             </span>
           </div>
 
@@ -216,17 +216,17 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
             {acting ? (
               <>
                 <span className="w-2.5 h-2.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                Закрываю...
+                Closing...
               </>
             ) : (
-              'Закрыть позицию'
+              'Close position'
             )}
           </button>
         </div>
       ) : (
         /* No active position — show open trade button */
         <div className="text-center py-3">
-          <p className="text-xs text-gray-600 mb-3">Нет активных сделок</p>
+          <p className="text-xs text-gray-600 mb-3">No active positions</p>
           <button
             type="button"
             onClick={() => doAction('open')}
@@ -236,10 +236,10 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
             {acting ? (
               <>
                 <span className="w-2.5 h-2.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                Открываю...
+                Opening...
               </>
             ) : (
-              'Открыть сделку (mock)'
+              'Open trade (mock)'
             )}
           </button>
         </div>
@@ -253,24 +253,24 @@ export default function TradePanel({ tokenId, apiBase }: TradePanelProps) {
           className="text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1"
         >
           <span className={`transition-transform ${showHistory ? 'rotate-90' : ''}`}>▶</span>
-          История сделок ({trades.length})
+          Trade history ({trades.length})
         </button>
 
         {showHistory && (
           <div className="mt-3 overflow-x-auto">
             {trades.length === 0 ? (
               <p className="text-xs text-gray-600 text-center py-4">
-                Сделок пока нет. Нажми «Открыть сделку» чтобы начать.
+                No trades yet. Click ‘Open trade’ to get started.
               </p>
             ) : (
               <table className="w-full text-xs">
                 <thead>
                   <tr className="text-gray-500 border-b border-gray-800">
-                    <th className="text-left py-2 pr-2 font-medium">Время</th>
-                    <th className="text-left py-2 pr-2 font-medium">Пара</th>
+                    <th className="text-left py-2 pr-2 font-medium">Time</th>
+                    <th className="text-left py-2 pr-2 font-medium">Pair</th>
                     <th className="text-center py-2 pr-2 font-medium">Side</th>
-                    <th className="text-right py-2 pr-2 font-medium">Сумма</th>
-                    <th className="text-right py-2 pr-2 font-medium">Цена</th>
+                    <th className="text-right py-2 pr-2 font-medium">Amount</th>
+                    <th className="text-right py-2 pr-2 font-medium">Price</th>
                     <th className="text-right py-2 font-medium">PnL</th>
                   </tr>
                 </thead>

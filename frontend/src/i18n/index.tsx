@@ -13,7 +13,7 @@ interface LangCtx {
 }
 
 const LangContext = createContext<LangCtx>({
-  lang: 'ru',
+  lang: 'en',
   setLang: () => {},
   t: (k) => k,
 });
@@ -22,10 +22,10 @@ function detectLang(): Lang {
   const stored = localStorage.getItem('lang') as Lang | null;
   if (stored === 'ru' || stored === 'en') return stored;
   const path = window.location.pathname;
-  if (path.startsWith('/en')) return 'en';
   if (path.startsWith('/ru')) return 'ru';
-  const nav = navigator.language?.startsWith('ru') ? 'ru' : 'en';
-  return nav;
+  if (path.startsWith('/en')) return 'en';
+  // Default to English
+  return 'en';
 }
 
 export function LangProvider({ children }: { children: ReactNode }) {

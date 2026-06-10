@@ -1,12 +1,12 @@
 /**
- * Типы данных MolebotNFT для фронтенда
+ * MolebotNFT data types for the frontend
  */
 
 /**
- * Raw on-chain MoleData (как возвращает getMoleData задеплоенного контракта).
- * Структура MolebotNFT.sol: { mood, levelIndex, cumulativePnl, lastTradeTs, isMythic }.
- * Поля serialNumber/personalityHash в контракте нет — серийный номер
- * равен tokenId (1 крот на кошелёк).
+ * Raw on-chain MoleData (as returned by getMoleData of the deployed contract).
+ * MolebotNFT.sol structure: { mood, levelIndex, cumulativePnl, lastTradeTs, isMythic }.
+ * serialNumber/personalityHash fields don't exist in the contract — serial number
+ * equals tokenId (1 mole per wallet).
  */
 export interface MoleDataRaw {
   mood: number;
@@ -16,7 +16,7 @@ export interface MoleDataRaw {
   isMythic: boolean;
 }
 
-/** Обработанные данные для UI */
+/** Processed data for UI */
 export interface MoleNFTInfo {
   tokenId: number;
   serialNumber: number;
@@ -29,7 +29,7 @@ export interface MoleNFTInfo {
   tokenURI: string;
 }
 
-/** Уровни крота (из контракта: levelThresholds) */
+/** Mole levels (from contract: levelThresholds) */
 export const LEVEL_NAMES: Record<number, string> = {
   0: 'Slumbering Mole',
   1: 'Digger',
@@ -50,12 +50,12 @@ export const MOOD_EMOJI: Record<number, string> = {
 };
 
 export const MOOD_LABEL: Record<number, string> = {
-  0: 'Угрюмый',
-  1: 'Нейтральный',
-  2: 'Дерзкий',
+  0: 'Grumpy',
+  1: 'Neutral',
+  2: 'Bold',
 };
 
-/** Преобразование raw on-chain данных в UI-friendly формат */
+/** Convert raw on-chain data to UI-friendly format */
 export function parseMoleData(
   tokenId: number,
   raw: MoleDataRaw | null,
@@ -67,11 +67,11 @@ export function parseMoleData(
   const levelIndex = Number(raw.levelIndex);
   return {
     tokenId,
-    serialNumber: tokenId, // в контракте нет serialNumber — используем tokenId
+    serialNumber: tokenId, // contract has no serialNumber — use tokenId
     mood,
     levelIndex,
     levelName: LEVEL_NAMES[levelIndex] ?? `Level ${levelIndex}`,
-    cumulativePnl: Number(raw.cumulativePnl) / 1e6, // конвертируем из USDC decimals
+    cumulativePnl: Number(raw.cumulativePnl) / 1e6, // convert from USDC decimals
     isMythic: raw.isMythic,
     hasRevealed: revealed,
     tokenURI: uri,
