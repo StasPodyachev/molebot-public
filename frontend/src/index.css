@@ -1,3 +1,6 @@
+/* Font imports — must be before @tailwind */
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&f[]=satoshi@400,500,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -59,11 +62,7 @@ body {
   min-height: 100dvh;
 }
 
-/* ═════════════════════════════════════════════════════════════════════ */
-/*  Font imports (Fontshare CDN)                                        */
-/* ═════════════════════════════════════════════════════════════════════ */
 
-@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&f[]=satoshi@400,500,700&display=swap');
 
 /* ═════════════════════════════════════════════════════════════════════ */
 /*  Tailwind-compatible utility aliases                                 */
@@ -648,4 +647,186 @@ body {
 @media (max-width: 540px) {
   .features-bento { grid-template-columns: 1fr; }
   .feature-tile:nth-child(1) { grid-column: span 1; }
+}
+
+/* ═════════════════════════════════════════════════════════════════════ */
+/*  Section Container (Dashboard)                                       */
+/* ═════════════════════════════════════════════════════════════════════ */
+
+.section-container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 2.5rem);
+  padding-block: 1.5rem;
+}
+
+/* ── Button aliases (DashboardPage uses .btn.btn-primary / .btn-ghost) */
+.btn.btn-primary,
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(153, 69, 255, 0.3);
+}
+.btn.btn-primary:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 0 30px rgba(153, 69, 255, 0.5);
+  transform: translateY(-1px);
+}
+.btn.btn-ghost,
+.btn-ghost {
+  background: var(--color-surface-offset);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.btn.btn-ghost:hover {
+  background: var(--color-surface-dynamic);
+  border-color: var(--color-text-faint);
+}
+
+/* ═════════════════════════════════════════════════════════════════════ */
+/*  Dashboard — Full Layout                                             */
+/* ═════════════════════════════════════════════════════════════════════ */
+
+/*
+  Layout (≥ 900px):
+
+  ┌─────────────────────────────────────────────────────┐
+  │  header (sticky)                                    │
+  ├─────────────────────────────────────────────────────┤
+  │                                                     │
+  │  ┌──────────────┬──────────────────────────────┐   │
+  │  │  LEFT COLUMN │  RIGHT COLUMN                │   │
+  │  │              │                              │   │
+  │  │  NFT Card    │  UserBalance (top-right)     │   │
+  │  │              │  VaultBalance                │   │
+  │  │              │  DepositButton               │   │
+  │  │              │  MoleMintButton              │   │
+  │  │              │  Hide/Show Chat              │   │
+  │  ├──────────────┤                              │   │
+  │  │  StrategyPanel                              │   │
+  │  │  TradePanel                                 │   │
+  │  │  StatsPanel                                 │   │
+  │  └─────────────────────────────────────────────┘   │
+  │                                                     │
+  │  ChatPanel (full-width, collapsible)                │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+*/
+
+.dashboard-page {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-main {
+  flex: 1;
+  padding-top: 6rem; /* header height offset */
+  padding-bottom: 2rem;
+}
+
+.dashboard-inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 2.5rem);
+}
+
+/* Two-column grid for the main area */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) 1fr;
+  gap: 2rem;
+  align-items: start;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Left column: NFT card + panels stacked */
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+/* Right column: balance info + actions */
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Chat panel — full width below the grid */
+.dashboard-chat {
+  margin-top: 1.5rem;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Empty state */
+.dashboard-empty {
+  text-align: center;
+  padding-block: 4rem;
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+/* ── Panel base style (panels use Tailwind gray-900 which resolves via tw,
+       but we add a token-based fallback too) ─────────────────────────── */
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+/* ── Header breadcrumb label ─────────────────────────────────────────── */
+.dashboard-breadcrumb {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 1.25rem;
+}
+
+/* ── Loading skeleton ─────────────────────────────────────────────────── */
+.dashboard-loading {
+  text-align: center;
+  padding-block: 4rem;
+  color: var(--color-text-muted);
+}
+
+/* ═════════════════════════════════════════════════════════════════════ */
+/*  Responsive overrides                                               */
+/* ═════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-left {
+    order: 2;
+  }
+
+  .dashboard-sidebar {
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-main {
+    padding-top: 5rem;
+  }
+
+  .dashboard-inner {
+    padding-inline: 1rem;
+  }
 }

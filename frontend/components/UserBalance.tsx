@@ -71,13 +71,13 @@ export default function UserBalance({ address, onBalanceChange }: UserBalancePro
   const showFaucet = balance === 0n;
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col gap-2 bg-gray-900 border border-gray-800 rounded-2xl p-4">
       {/* Строка: сеть | баланс */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between">
         <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">
           Mantle Sepolia
         </span>
-        <span className={`text-xs font-mono ${
+        <span className={`text-sm font-mono font-semibold ${
           balanceLoading ? 'text-gray-600 animate-pulse' :
           hasEnoughForMint ? 'text-mole-400' :
           'text-red-400'
