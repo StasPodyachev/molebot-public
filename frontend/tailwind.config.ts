@@ -10,7 +10,7 @@ import type { Config } from "tailwindcss";
  *   - mythic = MoleMascot animated border
  */
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   darkMode: "class",
   theme: {
     extend: {
@@ -24,6 +24,16 @@ const config: Config = {
         mole: {
           dark: "#1f2937",
           warm: "#a16207",
+          50:  "#f3e8ff",
+          100: "#e9d5ff",
+          200: "#d8b4fe",
+          300: "#c084fc",
+          400: "#b06dff",
+          500: "#9945ff",
+          600: "#7c2fe8",
+          700: "#6624c2",
+          800: "#2a1a40",
+          900: "#1a0d2e",
         },
       },
       keyframes: {

@@ -14,9 +14,9 @@ interface MoleNFTCardProps {
  */
 export default function MoleNFTCard({ nft }: MoleNFTCardProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 max-w-[500px]">
+    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 w-full">
       {/* Avatar */}
-      <div className="w-full aspect-square max-w-[500px] max-h-[500px] rounded-xl bg-gradient-to-br from-mole-800 via-gray-900 to-mole-900 flex items-center justify-center mb-4 relative overflow-hidden">
+      <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-mole-800 via-gray-900 to-mole-900 flex items-center justify-center mb-4 relative overflow-hidden">
         <span className="text-8xl">{nft.isMythic ? '🌟' : '🦔'}</span>
         {nft.isMythic && (
           <span className="absolute top-2 right-2 text-xs bg-yellow-600/80 text-yellow-200 px-2 py-0.5 rounded-full">

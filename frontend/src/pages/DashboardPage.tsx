@@ -36,15 +36,14 @@ function MolebotLogo({ size = 28 }: { size?: number }) {
 }
 
 /**
- * DashboardPage — отдельная страница дашборда.
+ * DashboardPage — основная страница дашборда.
  * Маршрут: /dashboard/:tokenId
  *
- * Содержит:
- *   - Авторизация (проверяется в RequireAuth выше)
- *   - NFT-карточка крота
- *   - Баланс MNT
- *   - Кнопка минта / статус
- *   - Чат с кротом
+ * Layout (≥900px):
+ *   LEFT: NFT Card | StrategyPanel | TradePanel | StatsPanel
+ *   RIGHT: UserBalance | VaultBalance | DepositButton | MoleMintButton | Chat toggle
+ *
+ * Layout (<900px): single column, sidebar first
  */
 export default function DashboardPage() {
   const { t } = useT();
@@ -54,35 +53,48 @@ export default function DashboardPage() {
   const evmWallet = wallets.find((w) => w.walletClientType === 'privy');
   const userAddress = (evmWallet?.address?.toLowerCase()) as `0x${string}` | undefined;
 
-  const { nft, loading: nftLoading, error: nftError, hasMinted, refresh } = useMoleNFT(userAddress ?? null, Number(routeTokenId ?? 0) || null);
+  const {
+    nft,
+    loading: nftLoading,
+    error: nftError,
+    hasMinted,
+    refresh,
+  } = useMoleNFT(userAddress ?? null, Number(routeTokenId ?? 0) || null);
+
   const { mint, minting, mintError } = useMintNFT();
   const [mintTx, setMintTx] = useState<string | null>(null);
   const [chainError, setChainError] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
 
-  const ensureCorrectChain = useCallback(async (): Promise<ethers.BrowserProvider | null> => {
-    if (!evmWallet) {
-      setChainError(t('wallet.notFound'));
-      return null;
-    }
-    try {
-      const p = await evmWallet.getEthereumProvider();
-      const ep = new ethers.BrowserProvider(p);
-      const n = await ep.getNetwork();
-      if (Number(n.chainId) !== MANTLE_CHAIN_ID) {
-        try {
-          await p.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x138B' }] });
-        } catch {
-          setChainError(t('wallet.switchNetwork'));
-          return null;
-        }
+  const ensureCorrectChain = useCallback(
+    async (): Promise<ethers.BrowserProvider | null> => {
+      if (!evmWallet) {
+        setChainError(t('wallet.notFound'));
+        return null;
       }
-      return ep;
-    } catch {
-      setChainError(t('wallet.checkFailed'));
-      return null;
-    }
-  }, [evmWallet]);
+      try {
+        const p = await evmWallet.getEthereumProvider();
+        const ep = new ethers.BrowserProvider(p);
+        const n = await ep.getNetwork();
+        if (Number(n.chainId) !== MANTLE_CHAIN_ID) {
+          try {
+            await p.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x138B' }],
+            });
+          } catch {
+            setChainError(t('wallet.switchNetwork'));
+            return null;
+          }
+        }
+        return ep;
+      } catch {
+        setChainError(t('wallet.checkFailed'));
+        return null;
+      }
+    },
+    [evmWallet],
+  );
 
   const handleMint = useCallback(async () => {
     setChainError(null);
@@ -91,23 +103,31 @@ export default function DashboardPage() {
     if (!provider) return;
     try {
       const receipt = await mint(provider);
-      const hash = receipt?.hash ?? (receipt as any)?.transactionHash ?? null;
+      const hash =
+        receipt?.hash ?? (receipt as any)?.transactionHash ?? null;
       if (hash) setMintTx(hash);
       await refresh();
     } catch {
-      /* mintError внутри хука */
+      /* mintError lives inside the hook */
     }
   }, [ensureCorrectChain, mint, refresh]);
 
   return (
-    <div className="bg-bg text-text font-sans antialiased min-h-dvh overflow-x-hidden">
+    <div className="dashboard-page">
+      {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="landing-header">
         <div className="landing-header__inner">
-          <div className="landing-header__brand" onClick={() => window.location.href = '/'} style={{cursor: 'pointer'}}>
+          <div
+            className="landing-header__brand"
+            onClick={() => (window.location.href = '/')}
+            style={{ cursor: 'pointer' }}
+          >
             <MolebotLogo size={28} /> molebot
           </div>
           <nav className="landing-header__nav">
-            <span className="text-xs text-gray-500">Token #{routeTokenId ?? '—'}</span>
+            <span className="text-xs text-gray-500">
+              Token #{routeTokenId ?? '—'}
+            </span>
             <button className="btn btn-primary" onClick={() => logout()}>
               {t('nav.logout')}
             </button>
@@ -115,29 +135,95 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <section className="section-container" style={{ paddingTop: '6rem' }}>
-        <p className="section-label">{t('dashboard.title')}</p>
+      {/* ── Main ───────────────────────────────────────────────────── */}
+      <main className="dashboard-main">
+        <div className="dashboard-inner">
+          {/* Breadcrumb */}
+          <p className="dashboard-breadcrumb">{t('dashboard.title')}</p>
 
-        {nftLoading && <p className="text-text-muted text-center">{t('dashboard.loading')}</p>}
+          {/* Loading */}
+          {nftLoading && (
+            <div className="dashboard-loading">
+              <p>{t('dashboard.loading')}</p>
+            </div>
+          )}
 
-        {!nftLoading && hasMinted && nft ? (
-          <>
-            <div className="dashboard-grid">
-              <MoleNFTCard nft={nft} />
-              <div className="dashboard-sidebar">
-                {userAddress && <UserBalance address={userAddress} />}
+          {/* ── Has NFT ─────────────────────────────────────────── */}
+          {!nftLoading && hasMinted && nft ? (
+            <>
+              {/* Two-column grid */}
+              <div className="dashboard-grid">
+                {/* LEFT: NFT card + trading panels */}
+                <div className="dashboard-left">
+                  <MoleNFTCard nft={nft} />
+                  <StrategyPanel
+                    tokenId={nft.tokenId}
+                    apiBase={import.meta.env.VITE_API_BASE_URL}
+                  />
+                  <TradePanel
+                    tokenId={nft.tokenId}
+                    apiBase={import.meta.env.VITE_API_BASE_URL}
+                  />
+                  <StatsPanel
+                    tokenId={nft.tokenId}
+                    apiBase={import.meta.env.VITE_API_BASE_URL}
+                  />
+                </div>
 
-                {/* FE-34: Vault balance + deposit */}
-                {nft && (
-                  <div className="space-y-2">
-                    <VaultBalance tokenId={nft.tokenId} apiBase={import.meta.env.VITE_API_BASE_URL} />
-                    <DepositButton tokenId={nft.tokenId} onDeposited={() => {
-                      // Force re-mount to refresh vault balance
-                      window.dispatchEvent(new Event('vault-deposit'));
-                    }} />
-                  </div>
-                )}
+                {/* RIGHT: wallet info + actions */}
+                <div className="dashboard-sidebar">
+                  {userAddress && (
+                    <UserBalance address={userAddress} />
+                  )}
 
+                  {/* Vault balance + deposit */}
+                  {nft && (
+                    <div className="space-y-2">
+                      <VaultBalance
+                        tokenId={nft.tokenId}
+                        apiBase={import.meta.env.VITE_API_BASE_URL}
+                      />
+                      <DepositButton
+                        tokenId={nft.tokenId}
+                        onDeposited={() => {
+                          window.dispatchEvent(new Event('vault-deposit'));
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <MoleMintButton
+                    minting={minting}
+                    error={mintError ?? chainError}
+                    txHash={mintTx}
+                    onMint={handleMint}
+                    explorerTx={(hash) => `${EXPLORER_BASE}/tx/${hash}`}
+                  />
+
+                  <button
+                    className="btn btn-ghost w-full"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    {showChat ? t('chat.hide') : t('chat.show')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Chat panel — full width, collapsible */}
+              {showChat && nft && (
+                <div className="dashboard-chat">
+                  <ChatPanel
+                    tokenId={nft.tokenId}
+                    apiBase={import.meta.env.VITE_API_BASE_URL}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            /* ── No NFT ─────────────────────────────────────────── */
+            !nftLoading && (
+              <div className="dashboard-empty">
+                <p className="text-text-muted mb-6">{t('dashboard.noMole')}</p>
                 <MoleMintButton
                   minting={minting}
                   error={mintError ?? chainError}
@@ -145,55 +231,18 @@ export default function DashboardPage() {
                   onMint={handleMint}
                   explorerTx={(hash) => `${EXPLORER_BASE}/tx/${hash}`}
                 />
-                <button
-                  className="btn btn-ghost"
-                  onClick={() => setShowChat(!showChat)}
-                  style={{ width: '100%' }}
-                >
-                  {showChat ? t('chat.hide') : t('chat.show')}
-                </button>
               </div>
-            </div>
+            )
+          )}
 
-            {/* FE-29: Strategy panel */}
-            <div className="mt-6 max-w-[500px]">
-              <StrategyPanel tokenId={nft.tokenId} apiBase={import.meta.env.VITE_API_BASE_URL} />
-            </div>
+          {/* NFT error */}
+          {nftError && (
+            <p className="text-error text-sm mt-4 text-center">{nftError}</p>
+          )}
+        </div>
+      </main>
 
-            {/* FE-30: Trade panel */}
-            <div className="mt-6 max-w-[500px]">
-              <TradePanel tokenId={nft.tokenId} apiBase={import.meta.env.VITE_API_BASE_URL} />
-            </div>
-
-            {/* FE-31: Stats panel */}
-            <div className="mt-6 max-w-[500px]">
-              <StatsPanel tokenId={nft.tokenId} apiBase={import.meta.env.VITE_API_BASE_URL} />
-            </div>
-          </>
-        ) : (
-          !nftLoading && (
-            <div className="dashboard-empty" style={{ textAlign: 'center' }}>
-              <p className="text-text-muted mb-4">{t('dashboard.noMole')}</p>
-              <MoleMintButton
-                minting={minting}
-                error={mintError ?? chainError}
-                txHash={mintTx}
-                onMint={handleMint}
-                explorerTx={(hash) => `${EXPLORER_BASE}/tx/${hash}`}
-              />
-            </div>
-          )
-        )}
-
-        {showChat && nft && (
-          <div className="section-container">
-            <ChatPanel tokenId={nft.tokenId} apiBase={import.meta.env.VITE_API_BASE_URL} />
-          </div>
-        )}
-
-        {nftError && <p className="text-error text-sm mt-4 text-center">{nftError}</p>}
-      </section>
-
+      {/* ── Footer ─────────────────────────────────────────────────── */}
       <footer className="landing-footer">
         <div className="section-container">
           <div className="landing-footer__inner">
@@ -201,7 +250,9 @@ export default function DashboardPage() {
               <MolebotLogo size={20} /> molebot
             </div>
             <div className="landing-footer__links">
-              <a href="https://github.com/StasPodyachev/molebot-public">GitHub</a>
+              <a href="https://github.com/StasPodyachev/molebot-public">
+                GitHub
+              </a>
               <a href="https://explorer.sepolia.mantle.xyz">Explorer</a>
               <a href="https://dorahacks.io">DoraHacks</a>
             </div>

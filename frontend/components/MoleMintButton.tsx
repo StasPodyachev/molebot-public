@@ -32,11 +32,11 @@ export default function MoleMintButton({
   const explorer = explorerTx ?? defaultExplorerTx;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col gap-3">
       <button
         onClick={onMint}
         disabled={minting}
-        className="bg-gradient-to-r from-mole-600 to-mole-500 hover:from-mole-500 hover:to-mole-400 disabled:from-gray-700 disabled:to-gray-700 text-white px-10 py-4 rounded-2xl text-lg font-semibold transition-all disabled:cursor-not-allowed shadow-xl shadow-mole-500/20 disabled:shadow-none"
+        className="w-full bg-gradient-to-r from-mole-600 to-mole-500 hover:from-mole-500 hover:to-mole-400 disabled:from-gray-700 disabled:to-gray-700 text-white px-6 py-3 rounded-2xl text-base font-semibold transition-all disabled:cursor-not-allowed shadow-xl shadow-mole-500/20 disabled:shadow-none"
       >
         {minting ? (
           <span className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export default function MoleMintButton({
       )}
 
       {txHash && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm w-full max-w-md">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm w-full">
           <p className="text-mole-400 mb-1">✅ Транзакция отправлена!</p>
           <a
             href={explorer(txHash)}
