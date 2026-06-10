@@ -36,8 +36,8 @@ function MolebotLogo({ size = 28 }: { size?: number }) {
 }
 
 /**
- * DashboardPage — основная страница дашборда.
- * Маршрут: /dashboard/:tokenId
+ * DashboardPage — main dashboard page.
+ * Route: /dashboard/:tokenId
  *
  * Layout (≥900px):
  *   LEFT: NFT Card | StrategyPanel | TradePanel | StatsPanel

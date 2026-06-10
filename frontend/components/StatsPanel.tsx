@@ -64,10 +64,10 @@ export default function StatsPanel({ tokenId, apiBase }: StatsPanelProps) {
           setStats(d.stats);
           setError(null);
         } else {
-          setError('Не удалось загрузить статистику');
+          setError('Failed to load statistics');
         }
       })
-      .catch(() => setError('Сервис статистики временно недоступен'))
+      .catch(() => setError('Stats service is temporarily unavailable'))
       .finally(() => setLoading(false));
   }, [API, tokenId]);
 
@@ -98,7 +98,7 @@ export default function StatsPanel({ tokenId, apiBase }: StatsPanelProps) {
     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-100">Статистика</h3>
+        <h3 className="text-sm font-semibold text-gray-100">Statistics</h3>
         <button
           type="button"
           onClick={fetchStats}
@@ -108,7 +108,7 @@ export default function StatsPanel({ tokenId, apiBase }: StatsPanelProps) {
         </button>
       </div>
 
-      {/* KPIs — 3 карточки в ряд */}
+      {/* KPIs — 3 cards in a row */}
       <div className="grid grid-cols-3 gap-3">
         {/* Total PnL */}
         <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-3 text-center">
@@ -118,7 +118,7 @@ export default function StatsPanel({ tokenId, apiBase }: StatsPanelProps) {
           </p>
           {stats.dailyPnl !== 0 && (
             <p className={`text-[10px] font-mono mt-0.5 ${pnlColor(stats.dailyPnl)}`}>
-              {fmtPnL(stats.dailyPnl)} сегодня
+              {fmtPnL(stats.dailyPnl)} today
             </p>
           )}
         </div>
@@ -138,32 +138,32 @@ export default function StatsPanel({ tokenId, apiBase }: StatsPanelProps) {
 
         {/* Total trades */}
         <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-3 text-center">
-          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Сделок</p>
+          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Trades</p>
           <p className="text-lg font-bold font-mono text-gray-200">
             {stats.totalTrades}
           </p>
           {stats.activePosition && (
-            <p className="text-[10px] text-blue-400 mt-0.5">1 активна</p>
+            <p className="text-[10px] text-blue-400 mt-0.5">1 active</p>
           )}
         </div>
       </div>
 
-      {/* Подробности: best/worst/avg */}
+      {/* Details: best/worst/avg */}
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="text-center">
-          <span className="text-gray-500">Лучшая</span>
+          <span className="text-gray-500">Best</span>
           <p className={`font-mono font-medium ${pnlColor(stats.bestTrade)}`}>
             {stats.bestTrade !== 0 ? fmtPnL(stats.bestTrade) : '—'}
           </p>
         </div>
         <div className="text-center">
-          <span className="text-gray-500">Худшая</span>
+          <span className="text-gray-500">Worst</span>
           <p className={`font-mono font-medium ${pnlColor(stats.worstTrade)}`}>
             {stats.worstTrade !== 0 ? fmtPnL(stats.worstTrade) : '—'}
           </p>
         </div>
         <div className="text-center">
-          <span className="text-gray-500">Средняя</span>
+          <span className="text-gray-500">Avg</span>
           <p className={`font-mono font-medium ${pnlColor(stats.avgPnlPerTrade)}`}>
             {stats.avgPnlPerTrade !== 0 ? fmtPnL(stats.avgPnlPerTrade) : '—'}
           </p>

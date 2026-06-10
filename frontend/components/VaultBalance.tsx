@@ -42,7 +42,7 @@ export default function VaultBalance({ tokenId, apiBase }: VaultBalanceProps) {
           setError(null);
         }
       })
-      .catch(() => setError('Сервис vault временно недоступен'))
+      .catch(() => setError('Vault service is temporarily unavailable'))
       .finally(() => setLoading(false));
   }, [API, tokenId]);
 
@@ -60,7 +60,7 @@ export default function VaultBalance({ tokenId, apiBase }: VaultBalanceProps) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl">
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-500">Vault баланс</p>
+        <p className="text-xs text-gray-500">Vault balance</p>
         <p className={`text-sm font-mono font-semibold ${
           loading ? 'text-gray-600 animate-pulse' :
           hasBalance ? 'text-mole-400' : 'text-gray-500'
@@ -72,7 +72,7 @@ export default function VaultBalance({ tokenId, apiBase }: VaultBalanceProps) {
         type="button"
         onClick={fetchBalance}
         className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-        title="Обновить баланс vault"
+        title="Refresh vault balance"
       >
         ↻
       </button>

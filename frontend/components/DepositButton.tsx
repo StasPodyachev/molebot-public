@@ -42,7 +42,7 @@ export default function DepositButton({ tokenId, onDeposited }: DepositButtonPro
 
   const handleDeposit = useCallback(async () => {
     if (!evmWallet) {
-      setError('Кошелёк не найден. Подключите кошелёк через Privy.');
+      setError('Wallet not found. Please connect your wallet via Privy.');
       return;
     }
 
@@ -51,7 +51,7 @@ export default function DepositButton({ tokenId, onDeposited }: DepositButtonPro
       catch { return null; }
     })();
     if (!valueWei || valueWei <= 0n) {
-      setError('Введите корректную сумму MNT (например: 0.1)');
+      setError('Enter a valid MNT amount (e.g. 0.1)');
       return;
     }
 
@@ -78,8 +78,8 @@ export default function DepositButton({ tokenId, onDeposited }: DepositButtonPro
       const msg = (err as any)?.reason
         ?? (err as any)?.shortMessage
         ?? (err as Error).message
-        ?? 'Неизвестная ошибка';
-      setError(`Ошибка депозита: ${msg}`);
+        ?? 'Unknown error';
+      setError(`Deposit error: ${msg}`);
     } finally {
       setDepositing(false);
     }
@@ -92,7 +92,7 @@ export default function DepositButton({ tokenId, onDeposited }: DepositButtonPro
         onClick={() => { setShowForm(true); setError(null); setTxHash(null); }}
         className="text-xs bg-mole-600 hover:bg-mole-500 text-white px-4 py-2 rounded-lg transition-all inline-flex items-center gap-1.5"
       >
-        💰 Пополнить Vault
+        💰 Fund Vault
       </button>
     );
   }
@@ -100,7 +100,7 @@ export default function DepositButton({ tokenId, onDeposited }: DepositButtonPro
   return (
     <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-3 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-300 font-medium">Пополнение Vault</span>
+        <span className="text-xs text-gray-300 font-medium">Fund Vault</span>
         <button
           type="button"
           onClick={() => setShowForm(false)}
@@ -133,10 +133,10 @@ export default function DepositButton({ tokenId, onDeposited }: DepositButtonPro
         {depositing ? (
           <>
             <span className="w-2.5 h-2.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-            Подтвердите в кошельке...
+            Confirm in wallet...
           </>
         ) : (
-          `Депозит ${amount || '0.00'} MNT`
+          `Deposit ${amount || '0.00'} MNT`
         )}
       </button>
 
